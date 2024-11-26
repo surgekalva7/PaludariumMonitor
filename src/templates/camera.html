@@ -1,0 +1,43 @@
+<!-- camera.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera - Paludarium Monitor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/camera">Camera</a></li>
+                <li><a href="/dashboard">Dashboard</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="camera-section">
+            <h1>Live Camera Feed</h1>
+            <p>Watch your paludarium in real time.</p>
+            <video autoplay="true" id="camera-feed"></video>
+            <script>
+                const video = document.getElementById('camera-feed');
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    navigator.mediaDevices.getUserMedia({ video: true })
+                        .then(stream => {
+                            video.srcObject = stream;
+                        })
+                        .catch(err => {
+                            console.error("Error accessing the camera: ", err);
+                        });
+                }
+            </script>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Paludarium Monitor. All rights reserved.</p>
+    </footer>
+</body>
+</html>

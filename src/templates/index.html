@@ -1,0 +1,49 @@
+<!-- home.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Paludarium Monitor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/camera">Camera</a></li>
+                <li><a href="/dashboard">Dashboard</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="welcome">
+            <h1>Welcome to Paludarium Monitor</h1>
+            <p>Monitor and maintain your paludarium ecosystem with ease using our web app powered by Raspberry Pi sensors.</p>
+            <a href="/dashboard" class="cta-button">View Dashboard</a>
+        </section>
+
+        <section class="features">
+            <h2>Features</h2>
+            <div class="feature-card">
+                <h3>Live Camera Feed</h3>
+                <p>Keep an eye on your paludarium with a live video feed.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Environmental Data</h3>
+                <p>Monitor temperature, humidity, light levels, and water quality in real-time.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Custom Alerts</h3>
+                <p>Receive notifications for changes in environmental conditions.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Paludarium Monitor. All rights reserved.</p>
+    </footer>
+</body>
+</html>

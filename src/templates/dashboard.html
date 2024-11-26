@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/camera">Camera</a></li>
+                <li><a href="/dashboard">Dashboard</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="dashboard-section">
+            <h1>Dashboard</h1>
+            
+            <div class="tabs">
+                <button onclick="updateChart('1d')">1 Day</button>
+                <button onclick="updateChart('7d')">7 Days</button>
+                <button onclick="updateChart('1m')">1 Month</button>
+                <button onclick="updateChart('6m')">6 Months</button>
+            </div>
+
+            <div class="charts-grid">
+                <div>
+                    <canvas id="lineChart"></canvas>
+                </div>
+                <div>
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Temperature</td>
+                        <td>22.5°C</td>
+                    </tr>
+                    <tr>
+                        <td>Humidity</td>
+                        <td>55%</td>
+                    </tr>
+                    <tr>
+                        <td>Light</td>
+                        <td>300 Lux</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        &copy; 2024 Paludarium Monitor
+    </footer>
+
+    <script>
+        const lineChartCtx = document.getElementById('lineChart').getContext('2d');
+        const pieChartCtx = document.getElementById('pieChart').getContext('2d');
+
+        let lineChart = new Chart(lineChartCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Metric over Time',
+                    data: [],
+                    borderColor: '#6a11cb',
+                    backgroundColor: 'rgba(106, 17, 203, 0.2)',
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        let pieChart = new Chart(pieChartCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Metric A', 'Metric B', 'Metric C'],
+                datasets: [{
+                    data: [30, 50, 20],
+                    backgroundColor: ['#6a11cb', '#2575fc', '#2c3e50']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        function updateChart(period) {
+            let data = [];
+            let labels = [];
+
+            if (period === '1d') {
+                labels = ['6 AM', '12 PM', '6 PM', '12 AM'];
+                data = [20, 22, 24, 21];
+            } else if (period === '7d') {
+                labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                data = [20, 21, 22, 23, 21, 20, 22];
+            } else if (period === '1m') {
+                labels = Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`);
+                data = Array.from({ length: 30 }, () => Math.random() * 5 + 20);
+            } else if (period === '6m') {
+                labels = Array.from({ length: 180 }, (_, i) => `Day ${i + 1}`);
+                data = Array.from({ length: 180 }, () => Math.random() * 5 + 20);
+            }
+
+            lineChart.data.labels = labels;
+            lineChart.data.datasets[0].data = data;
+            lineChart.update();
+        }
+
+        updateChart('1d');
+    </script>
+</body>
+
+</html>
