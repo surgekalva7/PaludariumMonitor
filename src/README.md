@@ -104,7 +104,7 @@ This README provides a comprehensive guide to monitoring and maintaining the hea
 
 ## Steps to Start Program
   - Create a virtual environment
-    - python3 -m venv myenv
+    - python3.11 -m venv myenv
   - Source to the virtual environment
     - source myenv/bin/activate
   - Install the requirements
