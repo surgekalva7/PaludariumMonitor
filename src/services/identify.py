@@ -65,7 +65,7 @@ def main():
         cv2.imshow("Live Plant/Organism/Bacteria Identifier", frame)
 
         # Exit on 'q' key press
-        if cv2.waitKey(1) & 0xFF == ord("q"):
+        if cv2.waitKey(30) & 0xFF == ord("q"):
             break
 
     # Release the video stream and close windows
