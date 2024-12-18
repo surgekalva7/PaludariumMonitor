@@ -1,8 +1,12 @@
+#!/bin/sh
+
 import cv2
 from ultralytics import YOLO
 
-model = YOLO("yolov9c.pt")
+model = YOLO(model="yolov9c.pt")
 
+#model.info()
+"""
 def predict(chosen_model, img, classes=[], conf=0.5):
     if classes:
         results = chosen_model.predict(img, classes=classes, conf=conf)
@@ -70,3 +74,4 @@ while True:
     
     cv2.waitKey(1)
 writer.release()
+"""
