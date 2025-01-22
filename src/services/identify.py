@@ -1,76 +1,31 @@
-# CV captures live feed
+from ultralytics import YOLO
 import cv2
-import tensorflow as tf
-import numpy as np
-from tensorflow.keras.applications import mobilenet_v2
-from tensorflow.keras.applications.mobilenet_v2 import decode_predictions
 
-# Load pre-trained MobileNetV2 model
-def load_model():
-    print("Loading MobileNetV2 model...")
-    model = tf.keras.applications.MobileNetV2(weights="imagenet")
-    return model
+model = YOLO("yolo11n.yaml")
 
-# Preprocess each frame for the model - Cleans the raw data info usuable data
-def preprocess_frame(frame):
-    # Resize frame to 224x224 (MobileNetV2 input size)
-    img = cv2.resize(frame, (224, 224))
-    img_array = np.expand_dims(img, axis=0)  # Add batch dimension
-    img_array = mobilenet_v2.preprocess_input(img_array)  # Preprocess for MobileNetV2
-    return img_array
+results = model.train(data = "data.yaml", epochs=50, imgsz=640, device='0,1,2,3')
 
-# Predict and decode results for each frame
-def predict_frame(model, frame):
-    preprocessed = preprocess_frame(frame)
-    predictions = model.predict(preprocessed)
-    decoded_predictions = decode_predictions(predictions, top=3)[0]  # Top 3 predictions
-    return decoded_predictions
+print(model.info())
 
-# Annotate predictions on the frame
-def annotate_frame(frame, predictions):
-    y_offset = 20
-    for i, (imagenet_id, label, confidence) in enumerate(predictions):
-        text = f"{label}: {confidence * 100:.2f}%"
-        cv2.putText(frame, text, (10, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-        y_offset += 20
-    return frame
+cap = cv2.VideoCapture(0)
 
-def main():
-    # Load the pre-trained model
-    model = load_model()
+if not cap.isOpened():
+    print("Cannot open camera")
+    exit(1)
 
-    # Open video stream (camera feed)
-    # There can be multiple places to capture video feed
-    cap = cv2.VideoCapture(0)  # 0 for the default webcam
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        print("Cannot read camera")
+        exit()
 
-    if not cap.isOpened():
-        print("Error: Could not open the camera.")
-        return
+    # pass frame through model
+    frame_resized = cv2.resize(frame, (640, 480))
+    res = model.predict(source=frame_resized, show=True, conf=0.45)
 
-    print("Press 'q' to quit.")
+    #Display resulting frame
+    cv2.imshow('Stream', res[0].plot())
 
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            print("Error: Failed to capture frame.")
-            break
-
-        # Predict the current frame
-        predictions = predict_frame(model, frame)
-
-        # Annotate the frame with predictions
-        frame = annotate_frame(frame, predictions)
-
-        # Display the annotated frame
-        cv2.imshow("Live Plant/Organism/Bacteria Identifier", frame)
-
-        # Exit on 'q' key press
-        if cv2.waitKey(30) & 0xFF == ord("q"):
-            break
-
-    # Release the video stream and close windows
-    cap.release()
-    cv2.destroyAllWindows()
-
-if __name__ == "__main__":
-    main()
+    # Break loop on 'q' for quit
+    if cv2.waitKey(1) == ord('q'):
+        break
