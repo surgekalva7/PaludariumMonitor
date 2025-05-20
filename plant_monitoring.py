@@ -1,54 +1,87 @@
+import os
 import cv2
 import numpy as np
-from tensorflow.keras.applications import MobileNetV2
-from tensorflow.keras.applications.mobilenet_v2 import preprocess_input, decode_predictions
+import argparse
 from tensorflow.keras.models import load_model
+from train_model import train_model
 
-# Load the pre-trained MobileNetV2 model (replace with your fine-tuned model if available)
-model = MobileNetV2(weights='imagenet')
+# Paths
+model_path = "plant_classifier_model.h5"
+class_names_path = "class_names.txt"
 
-# Define a function to preprocess the frame
-def preprocess_frame(frame):
-    resized_frame = cv2.resize(frame, (224, 224))  # Resize to 224x224
-    array_frame = np.expand_dims(resized_frame, axis=0)  # Add batch dimension
-    preprocessed_frame = preprocess_input(array_frame)  # Preprocess for MobileNetV2
-    return preprocessed_frame
+def load_class_names():
+    """
+    Loads class names from the 'class_names.txt' file.
+    """
+    if not os.path.exists(class_names_path):
+        raise FileNotFoundError(f"Class names file '{class_names_path}' not found. Train the model first.")
+    
+    with open(class_names_path, "r") as f:
+        class_names = [line.strip() for line in f.readlines()]
+    return class_names
 
-# Start video capture
-cap = cv2.VideoCapture(0)  # 0 for default camera
+def open_camera():
+    """
+    Opens the camera and uses the trained model to identify plants in real-time.
+    """
+    # Load the trained model
+    if not os.path.exists(model_path):
+        print(f"Error: Model file '{model_path}' not found. Train the model first.")
+        return
 
-if not cap.isOpened():
-    print("Error: Could not open webcam.")
-    exit()
+    model = load_model(model_path)
 
-print("Press 'q' to quit.")
+    # Load class names
+    class_names = load_class_names()
 
-while True:
-    ret, frame = cap.read()
-    if not ret:
-        print("Error: Failed to capture frame.")
-        break
+    # Start video capture
+    cap = cv2.VideoCapture(0)  # 0 for default camera
 
-    # Preprocess the frame
-    preprocessed_frame = preprocess_frame(frame)
+    if not cap.isOpened():
+        print("Error: Could not open webcam.")
+        return
 
-    # Predict the class
-    predictions = model.predict(preprocessed_frame)
-    decoded_predictions = decode_predictions(predictions, top=1)[0]  # Get top prediction
-    label = decoded_predictions[0][1]  # Get class label
-    confidence = decoded_predictions[0][2]  # Get confidence score
+    print("Press 'q' to quit.")
 
-    # Overlay the prediction on the frame
-    text = f"{label}: {confidence:.2f}"
-    cv2.putText(frame, text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            print("Error: Failed to capture frame.")
+            continue
 
-    # Display the frame
-    cv2.imshow("Plant Identifier", frame)
+        # Preprocess the frame
+        resized_frame = cv2.resize(frame, (224, 224))
+        array_frame = np.expand_dims(resized_frame, axis=0)
+        preprocessed_frame = array_frame / 255.0  # Normalize
 
-    # Break the loop on 'q' key press
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+        # Predict the class
+        predictions = model.predict(preprocessed_frame)
+        class_idx = np.argmax(predictions)
+        confidence = predictions[0][class_idx]
+        class_name = class_names[class_idx]  # Get class name from the loaded list
 
-# Release resources
-cap.release()
-cv2.destroyAllWindows()
+        # Overlay the prediction on the frame
+        text = f"{class_name}: {confidence:.2f}"
+        cv2.putText(frame, text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+        # Display the frame
+        cv2.imshow("Plant Identifier", frame)
+
+        # Break the loop on 'q' key press
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    # Release resources
+    cap.release()
+    cv2.destroyAllWindows()
+
+# Main function
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Plant Monitoring System")
+    parser.add_argument("--mode", type=str, required=True, choices=["train", "camera"], help="Mode: 'train' to train the model, 'camera' to open the camera")
+    args = parser.parse_args()
+
+    if args.mode == "train":
+        train_model()  # Call the training function
+    elif args.mode == "camera":
+        open_camera()
